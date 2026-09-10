@@ -1,0 +1,17 @@
+name: Hello GitHub Actions
+
+on:
+  push:
+
+jobs:
+  say-hello:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Print a greeting
+        run: echo "Hello, GitHub Actions!"
+
+      - name: Print system information
+        run: |
+          echo "Runner OS: $RUNNER_OS"
+          echo "Repository: $GITHUB_REPOSITORY"
