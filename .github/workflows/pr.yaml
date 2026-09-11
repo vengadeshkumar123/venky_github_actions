@@ -1,0 +1,16 @@
+name: 03 - On Pull Request
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]   # these are the defaults; shown here to be explicit
+
+jobs:
+  validate-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Describe the pull request
+        run: |
+          echo "Event      : $GITHUB_EVENT_NAME"      # -> pull_request
+          echo "PR base    : ${{ github.base_ref }}"  # branch you want to merge INTO (e.g. main)
+          echo "PR head    : ${{ github.head_ref }}"  # branch with your changes
+          echo "PR number  : ${{ github.event.pull_request.number }}"

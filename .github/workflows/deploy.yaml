@@ -1,0 +1,29 @@
+name: website CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: check
+        run: |
+          echo "website CI/CD"
+          ls -la
+          echo "website files"
+          find . -type f -name "*.html"
