@@ -13,7 +13,7 @@ jobs:
      steps:
       - name: checkoutcode
         uses: actions/checkout@v3
-        run: ls -la
+       
   job2: 
     needs: job1
     runs-on: ubuntu-latest
