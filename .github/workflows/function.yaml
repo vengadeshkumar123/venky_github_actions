@@ -1,0 +1,25 @@
+name: 19 - Status Functions
+
+on:
+  workflow_dispatch:
+
+jobs:
+  status-demo:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Build
+        run: echo "Build completed"
+
+      - name: Test
+        run: |
+          echo "Test started"
+          exit 1
+
+      - name: Rollback
+        if: ${{ failure() }}
+        run: echo "Rollback started"
+
+      - name: Cleanup
+        if: ${{ always() }}
+        run: echo "Cleanup completed"

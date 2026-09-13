@@ -1,0 +1,39 @@
+name: dependency job 
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened,closed]
+jobs:
+  job1:
+     runs-on: ubuntu-latest
+     steps:
+      - name: checkoutcode
+        uses: actions/checkout@v3
+      - name: checkfiles
+        run: |
+          echo "Checking files in the repository"
+          ls -al
+  job2: 
+    needs: job1
+    runs-on: ubuntu-latest
+    steps:
+      - name: job2 started
+        run: echo "job2 started"
+  job3:
+    needs: job1
+    runs-on: ubuntu-latest
+    steps:
+      - name: job3 started
+        run: echo "job3 started"
+  job4:
+    needs: [job2, job3]
+    runs-on: ubuntu-latest
+    steps:
+      - name: job4 started
+        run: echo "job4 started"
+      
+      
