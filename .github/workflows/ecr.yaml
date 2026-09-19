@@ -41,3 +41,17 @@ jobs:
         run: |
           docker push \
             ${{ steps.login-ecr.outputs.registry }}/practice:latest
+
+      - name: Deploy to EC2
+        run: |
+          aws ssm send-command \
+            --instance-ids "i-0ef44a9c329b12324" \
+            --document-name "AWS-RunShellScript" \
+            --parameters 'commands=[
+              "aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 354780327224.dkr.ecr.ap-south-1.amazonaws.com",
+              "docker pull 354780327224.dkr.ecr.ap-south-1.amazonaws.com/practice:latest",
+              "docker stop practice-container || true",
+              "docker rm practice-container || true",
+              "docker run -d --name practice-container -p 80:80 354780327224.dkr.ecr.ap-south-1.amazonaws.com/practice:latest"
+            ]' \
+            --region ap-south-1
