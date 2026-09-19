@@ -1,50 +1,43 @@
-name: push Ecr 
+name: Push Docker Image to ECR
+
 on:
   push:
     branches:
       - main
+
 jobs:
   build-and-push:
-
     runs-on: ubuntu-latest
 
-    
     permissions:
       id-token: write
       contents: read
 
     steps:
 
-      
       - name: Checkout code
         uses: actions/checkout@v4
 
-      
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ap-south-1
 
-      
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-     
       - name: Build Docker image
         run: |
-          docker build -t my-app ./proj
+          docker build -t practice ./proj
 
-      
       - name: Tag Docker image
         run: |
           docker tag practice:latest \
             ${{ steps.login-ecr.outputs.registry }}/practice:latest
 
-      
       - name: Push Docker image
         run: |
           docker push \
             ${{ steps.login-ecr.outputs.registry }}/practice:latest
-
