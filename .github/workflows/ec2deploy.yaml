@@ -1,0 +1,66 @@
+name: DEPLOY EC2
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build-push-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    strategy:
+      matrix:
+        include:
+          - app: proj
+            image: practice
+            container: practice-container
+            port: 8081
+
+          - app: proj-2
+            image: proj-2
+            container: proj-2-container
+            port: 8082
+
+          - app: proj-3
+            image: proj-3
+            container: proj-3-container
+            port: 8083
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ap-south-1
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t ${{ matrix.image }}:latest \
+            ./${{ matrix.app }}
+      - name: Tag Docker image
+        run: |
+          docker tag \
+            ${{ matrix.image }}:latest \
+            ${{ steps.login-ecr.outputs.registry }}/${{ matrix.image }}:latest
+      - name: Push Docker image
+        run: |
+          docker push \
+            ${{ steps.login-ecr.outputs.registry }}/${{ matrix.image }}:latest
+
+      - name: Deploy to EC2
+        run: |
+          aws ssm send-command \
+            --instance-ids "i-0ef44a9c329b12324" \
+            --document-name "AWS-RunShellScript" \
+            --parameters 'commands=[
+              "aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}",
+              "docker pull ${{ steps.login-ecr.outputs.registry }}/${{ matrix.image }}:latest",
+              "docker stop ${{ matrix.container }} || true",
+              "docker rm ${{ matrix.container }} || true",
+              "docker run -d --name ${{ matrix.container }} -p ${{ matrix.port }}:80 ${{ steps.login-ecr.outputs.registry }}/${{ matrix.image }}:latest"
